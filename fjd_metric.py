@@ -295,7 +295,7 @@ def calculate_alpha(image_embed, cond_embed, cuda=False):
 
 def calculate_fd(mu1, sigma1, mu2, sigma2, cuda=False, eps=1e-6):
     if cuda:
-        fid = torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=eps)
+        fid = torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=eps, cuda=self.cuda)
         fid = fid.cpu().numpy()
     else:
         fid = numpy_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=eps)
@@ -415,7 +415,7 @@ def numpy_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 
 # PyTorch implementation of Frechet distance, from Andrew Brock (modified slightly)
 # https://github.com/ajbrock/BigGAN-PyTorch/blob/master/inception_utils.py
-def torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
+def torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6, cuda=True):
     """Pytorch implementation of the Frechet Distance.
     Taken from https://github.com/bioinf-jku/TTUR
     The Frechet distance between two multivariate Gaussians X_1 ~ N(mu_1, C_1)
@@ -446,7 +446,7 @@ def torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 
     # Add a tiny offset to the covariance matrices to make covmean estimate more stable
     # Will change the output by a couple decimal places compared to not doing this
-    if self.cuda:
+    if cuda:
         offset = torch.eye(sigma1.size(0)).cuda().double() * eps
     else:
         offset = torch.eye(sigma1.size(0)).double() * eps
