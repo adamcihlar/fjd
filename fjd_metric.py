@@ -76,7 +76,8 @@ class FJDMetric:
                             desc='Computing generated distribution',
                             total=len(self.condition_loader)):
             _, condition = data  # it is assumed data contains (image, condition)
-            condition = condition.cuda()
+            if self.cuda:
+                condition = condition.cuda()
 
             with torch.no_grad():
                 for n in range(self.samples_per_condition):
@@ -129,8 +130,9 @@ class FJDMetric:
         for data in tqdm(self.reference_loader,
                          desc='Computing reference distribution'):
             image, condition = data
-            image = image.cuda()
-            condition = condition.cuda()
+            if self.cuda:
+                image = image.cuda()
+                condition = condition.cuda()
 
             with torch.no_grad():
                 image = self.image_embedding(image)
@@ -444,7 +446,10 @@ def torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 
     # Add a tiny offset to the covariance matrices to make covmean estimate more stable
     # Will change the output by a couple decimal places compared to not doing this
-    offset = torch.eye(sigma1.size(0)).cuda().double() * eps
+    if self.cuda:
+        offset = torch.eye(sigma1.size(0)).cuda().double() * eps
+    else:
+        offset = torch.eye(sigma1.size(0)).double() * eps
     sigma1, sigma2 = sigma1 + offset, sigma2 + offset
 
     diff = mu1 - mu2
